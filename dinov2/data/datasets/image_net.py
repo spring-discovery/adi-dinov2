@@ -12,11 +12,17 @@ from typing import Callable, List, Optional, Tuple, Union
 import numpy as np
 
 from .extended import ExtendedVisionDataset
+from glob import glob
 
 
 logger = logging.getLogger("dinov2")
 _Target = int
 
+class_path = {}
+for classn in glob('/mnt/ssl/demo/train/*'):
+    class_path[classn.split('/')[-1]] = []
+    for filen in glob(classn + '/*'):
+        class_path[classn.split('/')[-1]].append(filen)
 
 class _Split(Enum):
     TRAIN = "train"
@@ -41,7 +47,8 @@ class _Split(Enum):
             basename = f"{class_id}_{actual_index}"
         else:  # self in (_Split.VAL, _Split.TEST):
             basename = f"ILSVRC2012_{self.value}_{actual_index:08d}"
-        return os.path.join(dirname, basename + ".JPEG")
+        #return os.path.join(dirname, basename + ".JPEG")
+        return class_path[class_id][actual_index]
 
     def parse_image_relpath(self, image_relpath: str) -> Tuple[str, int]:
         assert self != _Split.TEST
@@ -165,7 +172,7 @@ class ImageNet(ExtendedVisionDataset):
 
     def __len__(self) -> int:
         entries = self._get_entries()
-        assert len(entries) == self.split.length
+        #assert len(entries) == self.split.length
         return len(entries)
 
     def _load_labels(self, labels_path: str) -> List[Tuple[str, str]]:
@@ -176,6 +183,7 @@ class ImageNet(ExtendedVisionDataset):
             with open(labels_full_path, "r") as f:
                 reader = csv.reader(f)
                 for row in reader:
+                    print(row)
                     class_id, class_name = row
                     labels.append((class_id, class_name))
         except OSError as e:

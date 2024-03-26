@@ -251,6 +251,7 @@ def enable(*, set_cuda_current_device: bool = True, overwrite: bool = False, all
     torch_env = _TorchDistributedEnvironment()
     torch_env.export(overwrite=overwrite)
 
+    print(torch_env.local_rank)
     if set_cuda_current_device:
         torch.cuda.set_device(torch_env.local_rank)
 
